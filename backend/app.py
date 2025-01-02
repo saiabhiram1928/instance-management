@@ -2,7 +2,7 @@ from functools import wraps
 import hashlib
 from flask import Flask, jsonify , request , session
 import boto3
-from datetime import datetime
+from datetime import datetime,timedelta
 from config import Config
 from database import db
 from models.users import User
@@ -60,18 +60,20 @@ def main():
                     "instance_type": instance['InstanceType'],
                     "name": name,
                     "launch_time": launch_time,
-                    "instance_arn": instance_arn
+                    "instance_arn": instance_arn,
+                    "price" : getPrice(instance_id=instance['InstanceId'])
                 })
                     
         return jsonify(response)
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
-def getPrice(launch_date, instance_arn):
+
+def getPrice( instance_id):
     # Format dates properly
-    start_date = launch_date
+   
     end_date = datetime.now().strftime('%Y-%m-%d')
-    
+    start_date = end_date - timedelta(days=30)
     ce = boto3.client('ce')
     try:
         response = ce.get_cost_and_usage(
@@ -91,7 +93,7 @@ def getPrice(launch_date, instance_arn):
                     {
                         'Dimensions': {
                             'Key': 'RESERVATION_ID',
-                            'Values': [instance_arn]
+                            'Values': [instance_id]
                         }
                     }
                 ]
@@ -113,11 +115,12 @@ def getPrice(launch_date, instance_arn):
 def get_instance_arn(instance_id, region, account_id):
     return f"arn:aws:ec2:{region}:{account_id}:instance/{instance_id}"
 
+
+
 def verify_password(stored_hash, stored_salt, provided_password):
     salted_password = (provided_password + stored_salt).encode('utf-8')
     calculated_hash = hashlib.sha256(salted_password).hexdigest()
     return calculated_hash == stored_hash
-
 
 
 @app.route('/login' , methods=['POST'])
@@ -140,7 +143,7 @@ def login():
     return jsonify({"message": "Login successful!"}), 200
 
 
-@app.route('/check_auth' , methods=['GET'])
+@app.route('/check-auth' , methods=['GET'])
 def check_auth():
     if session.get('session_id'):
         return jsonify({
