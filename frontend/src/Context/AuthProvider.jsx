@@ -10,7 +10,7 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/check_auth`, {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/check-auth`, {
           method: 'GET',
           credentials: "include"
         })

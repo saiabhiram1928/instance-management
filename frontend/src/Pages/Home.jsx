@@ -1,44 +1,35 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import InstanceTable from '../Comp/InstanceTable';
 import Loader from '../Comp/Loader';
-import fetchInstanceDetails from '../Context/InstanceProvider'
 import ErrorTab from '../Comp/ErrorTab';
+import { usePagination } from '../Context/PaginationHook.jsx'
+import Pagination from '../Comp/Pagination.jsx'
+import { useLocation, useNavigate } from 'react-router-dom';
 
-// const instances = [
-//     {
-//         instance_name: "Production Server",
-//         instance_id: "i-1234567890abcdef0",
-//         created_at: "2024-01-15T10:30:00",
-//         price: 156.78,
-//         additional_info: {
-//             type: "t2.micro",
-//             region: "us-east-1",
-//             status: "running",
-//             public_ip: "54.123.45.67",
-//             private_ip: "172.31.45.67"
-//         }
-//     },
-// ];
 const Home = () => {
-    const [instances, setInstances] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    useEffect(() => {
-        const fetch = async () => {
-            try {
-                const data = await fetchInstanceDetails();
-                setInstances(data)
-                setError(null)
-            } catch (error) {
-                console.log(error, typeof error)
-                setError(error.message || 'An error occurred while fetching instances');
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetch()
-    }, [])
+    const navigate = useNavigate();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const currentPage = parseInt(queryParams.get('page')) || 1;
+    const itemsPerPage = parseInt(queryParams.get('size')) || 10;
 
+
+    const { loading, instances, error, totalItems, totalPages } = usePagination(currentPage, itemsPerPage);
+    console.log(instances, totalItems, totalPages)
+    const handlePageChange = (page) => {
+        console.log(page)
+        navigate(`/home?page=${page}&size=${itemsPerPage}`);
+    };
+
+    const handleItemsPerPageChange = (newSize) => {
+        navigate(`/home?page=1&size=${newSize}`, { replace: true });
+    };
+    useEffect(() => {
+        if (location.pathname === '/home' && !location.search) {
+            console.log(location.search)
+            navigate('/home?page=1&size=10', { replace: true });
+        }
+    }, [location, navigate]);
     if (loading) return <Loader />
     return (
         <div className="bg-gray-900 text-white min-h-screen p-6">
@@ -48,6 +39,15 @@ const Home = () => {
                 <div className="mt-6">
                     <InstanceTable instances={instances} />
                 </div>
+
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                />
             </div>
         </div>
     )

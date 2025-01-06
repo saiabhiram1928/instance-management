@@ -22,6 +22,8 @@ const TableRow = ({ instance, isExpanded, onToggle, formatDate, formatPrice }) =
             <td className="px-6 py-4 whitespace-nowrap text-gray-300">{instance.instance_id}</td>
             <td className="px-6 py-4 whitespace-nowrap text-gray-300">{instance.instance_type}</td>
             <td className="px-6 py-4 whitespace-nowrap text-gray-300">{formatDate(instance.launch_time)}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-gray-300">{instance.price}</td>
+
         </tr>
     )
 }

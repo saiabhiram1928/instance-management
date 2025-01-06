@@ -1,7 +1,7 @@
 
 
-const fetchInstanceDetails = async () => {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/get-instances`, {
+const fetchInstanceDetails = async (page, per_page) => {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/get-instances?page=${page}&per_page=${per_page}`, {
         method: "GET",
         credentials: 'include',
         headers: {

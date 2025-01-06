@@ -16,7 +16,8 @@ const TableHearder = ({ sortConfig, onSort }) => {
         { key: 'name', label: 'Instance Name' },
         { key: 'instance_id', label: 'Instance ID' },
         { key: 'instance_type', label: 'Type' },
-        { key: 'launch_time', label: 'Launch Time' }
+        { key: 'launch_time', label: 'Launch Time' },
+        { key: 'price', label: 'Price (USD)' }
     ];
     return (
         <thead className="bg-gray-800">

@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Login from './Pages/login'
 import Home from './Pages/Home'
 import ProtectedRoute from './Comp/ProtectedRoute'
@@ -20,7 +20,8 @@ const App = () => {
             </Route>
 
             <Route element={<ProtectedRoute />}>
-              <Route path='/' element={<Home />} />
+              <Route path='/' element={<Navigate to={`/home?page=1&size=10`} replace />} />
+              <Route path='/home' element={<Home />} />
             </Route>
           </Route>
         </Routes>

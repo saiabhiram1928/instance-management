@@ -33,7 +33,15 @@ export const useSort = (data) => {
                     ? aDate - bDate
                     : bDate - aDate;
             }
+            if (sortConfig.key === 'price') {
+                // Convert price strings to numbers, removing currency symbols and handling undefined/null
+                const aPrice = parseFloat(a[sortConfig.key]?.toString().replace(/[^0-9.-]+/g, '') || 0);
+                const bPrice = parseFloat(b[sortConfig.key]?.toString().replace(/[^0-9.-]+/g, '') || 0);
 
+                return sortConfig.direction === 'asc'
+                    ? aPrice - bPrice
+                    : bPrice - aPrice;
+            }
             // Default string comparison for other fields
             return sortConfig.direction === 'asc'
                 ? a[sortConfig.key].localeCompare(b[sortConfig.key])
