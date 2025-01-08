@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgress-pv
+  namespace: ec2-app
+spec:
+  capacity:
+    storage: 4Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/postgres
+  persistentVolumeReclaimPolicy: Delete
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgress-pvc
+  namespace: ec2-app
+spec:
+  resources:
+    requests:
+      storage: 3Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deplpoyment
+  namespace: ec2-app
+spec:
+  selector:
+    matchLabels:
+      type: db
+  template:
+    metadata:
+      labels:
+        app: db-pod
+        type: db
+    spec:
+      containers:
+        - name: db-container
+          image: saiabhiram1928/db-postgres:2.0
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: postgres_user
+                  name: ec2-app-secret
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgres_password
+                  name: ec2-app-secret
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  key: postgres_db
+                  name: ec2-app-secret
+            - name: APP_USER
+              value: "ec2_app_user"
+            - name: READ_USER
+              value: "ec2_read_user"
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgress-pvc
+        - name: init-scripts
+          configMap:
+            name: postgres-init-scripts

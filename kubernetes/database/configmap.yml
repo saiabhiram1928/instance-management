@@ -1,0 +1,73 @@
+# postgres-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: postgres-init-scripts
+    namespace: ec2-app
+data:
+    01-schema.sql: |
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            salt VARCHAR(100) NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT valid_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$')
+        );
+
+        -- Create index on email for faster lookups
+        CREATE INDEX idx_users_email ON users(email);
+
+        -- Create a function to update the updated_at timestamp
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = CURRENT_TIMESTAMP;
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+
+        -- Create a trigger to automatically update the updated_at column
+        CREATE TRIGGER update_users_updated_at
+            BEFORE UPDATE ON users
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+
+    02-users.sh: |
+        #!/bin/bash
+        set -e
+
+        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+            -- Create users
+            CREATE USER $APP_USER WITH PASSWORD '$APP_PASSWORD';
+            CREATE USER $READ_USER WITH PASSWORD '$READ_PASSWORD';
+
+            -- Grant permissions
+            GRANT CONNECT ON DATABASE $POSTGRES_DB TO $APP_USER;
+            GRANT CREATE ON SCHEMA public TO $APP_USER;
+            GRANT USAGE ON SCHEMA public TO $APP_USER;
+            GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $APP_USER;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO $APP_USER;
+            GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $APP_USER;
+            GRANT ALL PRIVILEGES ON SCHEMA public TO $APP_USER;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public
+                GRANT ALL PRIVILEGES ON TABLES TO $APP_USER;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public
+                GRANT ALL PRIVILEGES ON SEQUENCES TO $APP_USER;
+
+            -- Read user permissions
+            GRANT CONNECT ON DATABASE $POSTGRES_DB TO $READ_USER;
+            GRANT USAGE ON SCHEMA public TO $READ_USER;
+            GRANT SELECT ON ALL TABLES IN SCHEMA public TO $READ_USER;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public
+                GRANT SELECT ON TABLES TO $READ_USER;
+        EOSQL
+    03-custom-init.sh: |
+        #!/bin/bash
+        set -e
+        if [ ! -f /var/lib/postgresql/data/.initialized ]; then
+           psql -U $POSTGRES_USER -d $POSTGRES_DB -f /docker-entrypoint-initdb.d/01-schema.sql
+           bash /docker-entrypoint-initdb.d/02-users.sh
+           touch /var/lib/postgresql/data/.initialized
+        fi

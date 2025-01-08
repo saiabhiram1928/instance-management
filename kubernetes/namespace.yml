@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: ec2-app
+    type: Namespace
+  name: ec2-app

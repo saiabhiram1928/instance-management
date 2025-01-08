@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: ec2-app
+  labels:
+    type: db
+spec:
+  selector:
+    type: db
+  ports:
+    - port: 5432
+      targetPort: 5432

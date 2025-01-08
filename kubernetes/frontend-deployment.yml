@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-pod
+  labels:
+    app: ec2-app
+    type: frontend
+spec:
+  selector:
+    matchLabels:
+      type: frontend
+  template:
+    metadata:
+      labels:
+        type: frontend
+        name: frontend-application
+    spec:
+      containers:
+        - name: frontend-container
+          image: saiabhiram1928/
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort:

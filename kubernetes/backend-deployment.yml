@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: ec2-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: backend
+  template:
+    metadata:
+      labels:
+        name: backend-pod
+        type: backend
+    spec:
+      containers:
+        - name: backend-container
+          image: saiabhiram1928/ec2-app:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 3000
