@@ -1,0 +1,39 @@
+
+services:
+  postgres:
+    build:
+      context: ./
+    container_name: ec2-db
+    ports:
+      - 5432:5432
+    volumes:
+      - ec2-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - ec2-app
+    environment:
+       POSTGRES_USER_FILE: /run/secrets/postgres_user
+       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+       POSTGRES_DB_FILE: /run/secrets/postgres_db
+       APP_USER: ec2_app_user
+       APP_PASSWORD: /run/secrets/postgres_password
+       READ_USER: ec2_read_user
+       READ_PASSWORD: /run/secrets/postgres_password
+    secrets:
+      - postgres_user
+      - postgres_password
+      - postgres_db
+volumes:
+  ec2-data:
+networks:
+  ec2-app:
+    driver: bridge
+secrets:
+  postgres_user:
+    file: ./secrets/user.txt
+  postgres_password:
+    file: ./secrets/pass.txt
+  postgres_db:
+    file: ./secrets/instance.txt
+
+  
