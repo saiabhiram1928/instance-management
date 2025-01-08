@@ -5,6 +5,7 @@ from datetime import timedelta
 
 basedir = path.abspath(path.dirname(__file__))
 load_dotenv(path.join(basedir, '.env'))
+allowed_host = environ.get('ALLOW_ORIGINS')
 class Config:
     POSTGRES_USER = environ.get('POSTGRES_USER')
     POSTGRES_PASSWORD = environ.get('POSTGRES_PASSWORD')
@@ -21,3 +22,4 @@ class Config:
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
+

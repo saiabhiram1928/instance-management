@@ -1,7 +1,9 @@
-FROM python:3.8-slim-buster
+FROM python:3-slim-buster
 WORKDIR /flask-app
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 COPY . .
-CMD [ "python3" , "app.py" ]
+EXPOSE 3000
+ENV POSTGRES_HOST=ec2-db
+CMD [ "gunicorn" , "--bind" , "0.0.0.0:3000" ,"app:app" ]
 

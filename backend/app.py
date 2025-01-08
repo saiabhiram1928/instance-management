@@ -3,7 +3,7 @@ import hashlib
 from flask import Flask, jsonify , request , session, current_app
 import boto3
 from datetime import datetime,timedelta , timezone
-from config import Config
+from config import Config, allowed_host
 from database import db
 from models.users import User
 import uuid
@@ -17,7 +17,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     db.init_app(app)
-    CORS(app , origins=['http://localhost:5173'], allow_headers=["Content-Type"] , supports_credentials=True,  expose_headers=['Set-Cookie'],
+    CORS(app , origins="*" , allow_headers=["Content-Type"] , supports_credentials=True,  expose_headers=['Set-Cookie'],
         allow_methods=['GET', 'POST'])
     app.config['SESSION_SQLALCHEMY'] = db
     Session(app)
